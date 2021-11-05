@@ -1,0 +1,292 @@
+name: fastatools
+help: |-
+  Useful scripts for fasta manipulation grouped in a single tool
+
+  This tool follows the UNIX philosophy, meaning that it reads the satndard input and writes to the standard output so it can be chained with other tools. 
+  However, for each and every command there are the --input (-i) and --output (-o) flags  allowing you to manually specify input and output files.
+
+version: 0.1.0a
+commands:
+  - name: upper
+    help: Transform sequences to uppercase
+    group: Transformation
+    flags:
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+  - name: lower
+    help: Transform sequences to lowercase
+    flags:
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+  - name: pretty
+    help: Wrap long sequences to a desired width
+    flags:
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+      - long: --width
+        short: -w
+        arg: width
+        default: 60
+        help: width at which to wrap sequences
+
+  - name: select
+    help: Select sequences to keep by name
+    group: Selection
+    catch_all: true
+    flags:
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+      - long: --file
+        short: -f
+        arg: file
+        help: file with names of sequences to keep (1 name per line)
+
+      - long: --regex
+        short: -r
+        arg: regex
+        help: regex defining files to keep
+
+      - long: --exclude
+        short: -x
+        help: discards sequences instead of keeping them
+
+  - name: subset
+    help: |-
+      Select sequences to keep by index
+
+      Indices are inclusive and start at 1.
+
+      You can select individual indices: 
+        fastatools subset -i input.fa 10 20 30 
+      Or a interval: 
+        fastatools subset -i input.fa --start 10 --end 20
+
+      You can specify only one of --start/--end and to define open ended intervals. 
+      If individual indices are specified, it will override any --start or --end specification.
+    catch_all: true
+    flags:
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+      - long: --start
+        short: -s
+        arg: startIndex
+        help: starting index
+        default: 1
+
+      - long: --end
+        short: -e
+        arg: endIndex
+        help: ending index
+        default: 9223372036854775807
+
+      - long: --exclude
+        short: -x
+        help: discards sequences instead of keeping them
+
+  - name: head
+    help: Print first sequences
+    flags:
+      - long: --number
+        short: -n
+        arg: number
+        default: 10
+        help: number of sequences to show
+
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+  - name: tail
+    help: Print last sequences
+    flags:
+      - long: --number
+        short: -n
+        arg: number
+        default: 10
+        help: number of sequences to show
+
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+  - name: count
+    help: Count number of sequences in FASTA
+    group: Information
+    flags:
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+  - name: names
+    help: Get names of sequences in FASTA
+    flags:
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+  - name: length
+    help: Get lengths of sequences in FASTA
+    examples:
+      - |-
+        # Get length of each sequence:
+
+          fastatools length \\ 
+              -i input.fasta
+        \n
+
+      - |-
+        # Get average length of sequences:
+
+          fastatools length \\ 
+              -i input.fasta \\ 
+              -m mean
+    flags:
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+      - long: --mode
+        short: -m
+        arg: mode
+        help: |- 
+          How to display length
+          The "each" mode will display length for every sequence. The "min", "max" and "mean" modes will display the computed length over all sequences.
+        default: each
+        allowed: [each, min, max, mean]
+
+  - name: freqs
+    help: get nucleotide frequencies in sequences
+    flags:
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+      - long: --mean
+        short: -m
+        help: display the mean frequencies over all sequences
+
+  - name: rename
+    help: rename sequences in FASTA
+    group: Name Manipulation
+    catch_all: true
+    flags:
+      - long: --file
+        short: -f
+        arg: file
+        help: path to name file (old name, new name) on each line
+      
+      - long: --regex
+        short: -r
+        arg: regex
+        help: regex to rename file
+
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+  - name: addid
+    help: add identifier at the end of sequence names
+    args:
+      - name: id
+        help: identifier to add to sequence names
+        required: true
+    flags: 
+      - long: --prefix
+        short: -p
+        help: add id to beginning instead of end
+
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+  - name: completion
+    group: Miscellaneous
+    help: generate Bash completion script
