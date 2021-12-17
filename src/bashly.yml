@@ -1,6 +1,6 @@
 name: fastatools
 help: |-
-  Useful scripts for fasta manipulation grouped in a single tool
+  Useful scripts for FASTA manipulation grouped in a single tool
 
   This tool follows the UNIX philosophy, meaning that it reads the satndard input and writes to the standard output so it can be chained with other tools. 
   However, for each and every command there are the --input (-i) and --output (-o) flags  allowing you to manually specify input and output files.
@@ -257,7 +257,7 @@ commands:
         help: Human readable lengths
 
   - name: freqs
-    help: get nucleotide frequencies in sequences
+    help: Get nucleotide frequencies in sequences
     flags:
       - long: --input
         short: -i
@@ -274,7 +274,7 @@ commands:
         help: display the mean frequencies over all sequences
 
   - name: split
-    help: split FASTA file in several files
+    help: Split FASTA file in several files
     group: Splitting
     flags:
       - long: --input
@@ -298,7 +298,7 @@ commands:
         default: split_
 
   - name: rename
-    help: rename sequences in FASTA
+    help: Rename sequences in FASTA
     group: Name Manipulation
     catch_all: true
     flags:
@@ -323,7 +323,7 @@ commands:
         help: path to output file
 
   - name: addid
-    help: add identifier at the end of sequence names
+    help: Add identifier at the end of sequence names
     args:
       - name: id
         help: identifier to add to sequence names
@@ -345,4 +345,4 @@ commands:
 
   - name: completion
     group: Miscellaneous
-    help: generate Bash completion script
+    help: Generate Bash completion script

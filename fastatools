@@ -12,10 +12,10 @@ fastatools_usage() {
   if [[ -n $long_usage ]]; then
     printf "fastatools\n"
     echo 
-    printf "  Useful scripts for fasta manipulation grouped in a single tool\n  \n  This tool follows the UNIX philosophy, meaning that it reads the satndard\n  input and writes to the standard output so it can be chained with other tools.\n  However, for each and every command there are the --input (-i) and --output\n  (-o) flags  allowing you to manually specify input and output files.\n"
+    printf "  Useful scripts for FASTA manipulation grouped in a single tool\n  \n  This tool follows the UNIX philosophy, meaning that it reads the satndard\n  input and writes to the standard output so it can be chained with other tools.\n  However, for each and every command there are the --input (-i) and --output\n  (-o) flags  allowing you to manually specify input and output files.\n"
     echo 
   else
-    printf "fastatools - Useful scripts for fasta manipulation grouped in a single tool\n"
+    printf "fastatools - Useful scripts for FASTA manipulation grouped in a single tool\n"
     echo 
   fi
 
@@ -39,14 +39,14 @@ fastatools_usage() {
   echo "  count        Count number of sequences in FASTA"
   echo "  names        Get names of sequences in FASTA"
   echo "  length       Get lengths of sequences in FASTA"
-  echo "  freqs        get nucleotide frequencies in sequences"
+  echo "  freqs        Get nucleotide frequencies in sequences"
   printf "\nSplitting Commands:\n"
-  echo "  split        split FASTA file in several files"
+  echo "  split        Split FASTA file in several files"
   printf "\nName Manipulation Commands:\n"
-  echo "  rename       rename sequences in FASTA"
-  echo "  addid        add identifier at the end of sequence names"
+  echo "  rename       Rename sequences in FASTA"
+  echo "  addid        Add identifier at the end of sequence names"
   printf "\nMiscellaneous Commands:\n"
-  echo "  completion   generate Bash completion script"
+  echo "  completion   Generate Bash completion script"
   echo
 
   if [[ -n $long_usage ]]; then
@@ -533,10 +533,10 @@ fastatools_length_usage() {
 # :command.usage
 fastatools_freqs_usage() {
   if [[ -n $long_usage ]]; then
-    printf "fastatools freqs - get nucleotide frequencies in sequences\n"
+    printf "fastatools freqs - Get nucleotide frequencies in sequences\n"
     echo 
   else
-    printf "fastatools freqs - get nucleotide frequencies in sequences\n"
+    printf "fastatools freqs - Get nucleotide frequencies in sequences\n"
     echo 
   fi
 
@@ -573,10 +573,10 @@ fastatools_freqs_usage() {
 # :command.usage
 fastatools_split_usage() {
   if [[ -n $long_usage ]]; then
-    printf "fastatools split - split FASTA file in several files\n"
+    printf "fastatools split - Split FASTA file in several files\n"
     echo 
   else
-    printf "fastatools split - split FASTA file in several files\n"
+    printf "fastatools split - Split FASTA file in several files\n"
     echo 
   fi
 
@@ -619,10 +619,10 @@ fastatools_split_usage() {
 # :command.usage
 fastatools_rename_usage() {
   if [[ -n $long_usage ]]; then
-    printf "fastatools rename - rename sequences in FASTA\n"
+    printf "fastatools rename - Rename sequences in FASTA\n"
     echo 
   else
-    printf "fastatools rename - rename sequences in FASTA\n"
+    printf "fastatools rename - Rename sequences in FASTA\n"
     echo 
   fi
 
@@ -664,10 +664,10 @@ fastatools_rename_usage() {
 # :command.usage
 fastatools_addid_usage() {
   if [[ -n $long_usage ]]; then
-    printf "fastatools addid - add identifier at the end of sequence names\n"
+    printf "fastatools addid - Add identifier at the end of sequence names\n"
     echo 
   else
-    printf "fastatools addid - add identifier at the end of sequence names\n"
+    printf "fastatools addid - Add identifier at the end of sequence names\n"
     echo 
   fi
 
@@ -711,10 +711,10 @@ fastatools_addid_usage() {
 # :command.usage
 fastatools_completion_usage() {
   if [[ -n $long_usage ]]; then
-    printf "fastatools completion - generate Bash completion script\n"
+    printf "fastatools completion - Generate Bash completion script\n"
     echo 
   else
-    printf "fastatools completion - generate Bash completion script\n"
+    printf "fastatools completion - Generate Bash completion script\n"
     echo 
   fi
 
