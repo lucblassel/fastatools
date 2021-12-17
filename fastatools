@@ -34,11 +34,14 @@ fastatools_usage() {
   echo "  subset       Select sequences to keep by index"
   echo "  head         Print first sequences"
   echo "  tail         Print last sequences"
+  echo "  subsite      Select specific sites of aligned FASTA sequences"
   printf "\nInformation Commands:\n"
   echo "  count        Count number of sequences in FASTA"
   echo "  names        Get names of sequences in FASTA"
   echo "  length       Get lengths of sequences in FASTA"
   echo "  freqs        get nucleotide frequencies in sequences"
+  printf "\nSplitting Commands:\n"
+  echo "  split        split FASTA file in several files"
   printf "\nName Manipulation Commands:\n"
   echo "  rename       rename sequences in FASTA"
   echo "  addid        add identifier at the end of sequence names"
@@ -357,6 +360,53 @@ fastatools_tail_usage() {
 }
 
 # :command.usage
+fastatools_subsite_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "fastatools subsite\n"
+    echo 
+    printf "  Select specific sites of aligned FASTA sequences\n  \n  The sites can be a list of integers specified as positional arguments or in a\n  file.\n  If the sequences are not aligned (i.e they do not have the same length) a\n  warning will be thrown.\n"
+    echo 
+  else
+    printf "fastatools subsite - Select specific sites of aligned FASTA sequences\n"
+    echo 
+  fi
+
+  printf "Usage:\n"
+  printf "  fastatools subsite [options] [...]\n"
+  printf "  fastatools subsite --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
+    echo
+    # :command.usage_flags
+    # :flag.usage
+    echo "  --input, -i INPUTPATH"
+    printf "    path to input file\n"
+    echo
+    
+    # :flag.usage
+    echo "  --output, -o OUTPUTPATH"
+    printf "    path to output file\n"
+    echo
+    
+    # :flag.usage
+    echo "  --file, -f FILE"
+    printf "    file with positions of am to keep (1 name per line)\n"
+    echo
+    
+    # :flag.usage
+    echo "  --fail, -x"
+    printf "    Exit with an error if sequences are unaligned instead of warn.\n"
+    echo
+
+  fi
+}
+
+# :command.usage
 fastatools_count_usage() {
   if [[ -n $long_usage ]]; then
     printf "fastatools count - Count number of sequences in FASTA\n"
@@ -460,9 +510,14 @@ fastatools_length_usage() {
     
     # :flag.usage
     echo "  --mode, -m MODE"
-    printf "    How to display length\n    The \"each\" mode will display length for every sequence. The \"min\", \"max\" and\n    \"mean\" modes will display the computed length over all sequences.\n"
-    printf "    Allowed: each, min, max, mean\n"
+    printf "    How to display length\n    The \"each\" mode will display length for every sequence. The \"min\", \"max\" and\n    \"mean\" modes will display the computed length over all sequences. The \"sum\"\n    option will return the sum of all sequence lengths.\n"
+    printf "    Allowed: each, min, max, mean, sum\n"
     printf "    Default: each\n"
+    echo
+    
+    # :flag.usage
+    echo "  --readable, -r"
+    printf "    Human readable lengths\n"
     echo
 
     # :command.usage_examples
@@ -510,6 +565,52 @@ fastatools_freqs_usage() {
     # :flag.usage
     echo "  --mean, -m"
     printf "    display the mean frequencies over all sequences\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+fastatools_split_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "fastatools split - split FASTA file in several files\n"
+    echo 
+  else
+    printf "fastatools split - split FASTA file in several files\n"
+    echo 
+  fi
+
+  printf "Usage:\n"
+  printf "  fastatools split [options]\n"
+  printf "  fastatools split --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
+    echo
+    # :command.usage_flags
+    # :flag.usage
+    echo "  --input, -i INPUTPATH"
+    printf "    path to input file\n"
+    echo
+    
+    # :flag.usage
+    echo "  --each, -e"
+    printf "    split file into individual sequences\n"
+    echo
+    
+    # :flag.usage
+    echo "  --every, -v EVERY"
+    printf "    split every n sequences (incompatible with --each)\n"
+    echo
+    
+    # :flag.usage
+    echo "  --prefix, -p OUTPUTPREFIX"
+    printf "    prefix for output_files\n"
+    printf "    Default: split_\n"
     echo
 
   fi
@@ -678,28 +779,48 @@ inspect_args() {
 
 # :command.user_lib
 # :src/lib/execute_command.sh
- 
 
 execute_command() {
-# Takes care of IO
-# $1 is the command (required)
-# $2 is the input file (optional)
-# $3 is the output file (optional)
-
-    if [[ -z $2 ]]
+    # Takes care of IO
+    # $1 is the command (required)
+    # $2 is the input file (optional)
+    # $3 is the output file (optional)
+    # $4 is a piped command (optional)
+    
+    if [[ -z $4 ]]
     then
-        if [[ -z $3 ]]
+        if [[ -z $2 ]]
         then
-            eval "$1"
+            if [[ -z $3 ]]
+            then
+                eval "$1"
+            else
+                eval "$1" > "$3"
+            fi
         else
-            eval "$1" > "$3"
+            if [[ -z $3 ]]
+            then
+                eval "$1" "$2"
+            else
+                eval "$1" "$2" > "$3"
+            fi
         fi
     else
-        if [[ -z $3 ]]
+        if [[ -z $2 ]]
         then
-            eval "$1" "$2"
+            if [[ -z $3 ]]
+            then
+                eval "$1" "|" "$4"
+            else
+                eval "$1" "|" "$4" > "$3"
+            fi
         else
-            eval "$1" "$2" > "$3"
+            if [[ -z $3 ]]
+            then
+                eval "$1" "$2" "|" "$4"
+            else
+                eval "$1" "$2" "|" "$4" > "$3"
+            fi
         fi
     fi
 }
@@ -789,7 +910,7 @@ fastatools_select_command() {
       operator="~"
   fi
   
-  SCRIPT="BEGIN { RS=\">\"; FS=\"\n\" } NR>1 { if (\$1 $operator /$joined\$/) { print \">\"\$1; for (i=2; i<NF; i++) { print \$i } } }"
+  SCRIPT="BEGIN { RS=\">\"; FS=\"\n\" } NR>1 { if (\$1 $operator /^$joined\$/) { print \">\"\$1; for (i=2; i<NF; i++) { print \$i } } }"
   
   execute_command "awk '$SCRIPT'" "${args[--input]}" "${args[--output]}"
 }
@@ -840,7 +961,6 @@ fastatools_subset_command() {
 fastatools_head_command() {
   # :src/head_command.sh
    
-  
   SCRIPT=" BEGIN { RS=\">\"; FS=\"\n\"; ORS=\"\" } NR>1{ if (FNR - 1 <= ${args[--number]}) { print \">\" \$0 } }"
   execute_command "awk '$SCRIPT'" "${args[--input]}" "${args[--output]}"
 }
@@ -849,7 +969,6 @@ fastatools_head_command() {
 fastatools_tail_command() {
   # :src/tail_command.sh
    
-  
   function make_script {
       LIM=$(($1-$2))
       echo "BEGIN { RS=\">\"; FS=\"\n\"; ORS=\"\" } NR>1 { if (NR > $LIM + 1) { print \">\" \$0 } }"
@@ -875,6 +994,20 @@ fastatools_tail_command() {
 }
 
 # :command.function
+fastatools_subsite_command() {
+  # :src/subsite_command.sh
+  SCRIPTARGS='BEGIN { RS=">"; FS=" "; ORS="\n"; n = split(args, temp, " "); for (x in temp) { pos[temp[x]]=1 } } NR>1 {printf ">%s\n", $1; curr = 0; for (i=2; i <= NF; i++) { for (j=1; j<=length($i); j++) { curr++; if (curr in pos) { printf "%s", substr($i, j, 1) } } } printf("\n") }'
+  SCRIPTFILE='BEGIN { while ( getline < file ) { pos[$0] = 1 } RS=">"; FS=" "; ORS="\n"; } NR>1 {printf ">%s\n", $1; curr = 0; for (i=2; i <= NF; i++) { for (j=1; j<=length($i); j++) { curr++; if (curr in pos) { printf "%s", substr($i, j, 1) } } } printf("\n") }'
+  
+  if [[ -n ${args[--file]} ]]
+  then
+      execute_command "awk -v file=\"${args[--file]}\" '$SCRIPTFILE'" "${args[--input]}" "${args[--output]}"
+  else
+      execute_command "awk -v args=\"${other_args[*]}\" '$SCRIPTARGS'" "${args[--input]}" "${args[--output]}"
+  fi
+}
+
+# :command.function
 fastatools_count_command() {
   # :src/count_command.sh
   
@@ -895,7 +1028,6 @@ fastatools_names_command() {
 fastatools_length_command() {
   # :src/length_command.sh
   
-  
   SCRIPTEACH='BEGIN { RS=">"; FS="\n"; OFS="\t"; } NR>1{ linelen=0; for (i=2; i<NF; i++) { linelen=linelen+length($i) } print $1, linelen }'
   
   SCRIPTMAX='BEGIN { RS=">"; FS="\n"; OFS="\t"; max=0; } NR>1{ linelen=0; for (i=2; i<NF; i++) { linelen=linelen+length($i) } if (linelen > max) { max=linelen } } END{ print max }'
@@ -904,10 +1036,14 @@ fastatools_length_command() {
   
   SCRIPTMEAN='BEGIN { RS=">"; FS="\n"; OFS="\t"; total=0; count=0; } NR>1{ linelen=0; for (i=2; i<NF; i++) { total=total+length($i) } count++ } END{ print total/count }'
   
+  SCRIPTSUM='BEGIN { RS=">"; FS="\n"; OFS="\t"; } NR>1{ linelen=0; for (i=2; i<NF; i++) { linelen=linelen+length($i) } total += linelen } END {print total}'
+  
+  FIELD=1
   case ${args[--mode]} in
       
       each)
           SCRIPT=$SCRIPTEACH
+          FIELD=2
       ;;
       min)
           SCRIPT=$SCRIPTMIN
@@ -918,9 +1054,17 @@ fastatools_length_command() {
       mean)
           SCRIPT=$SCRIPTMEAN
       ;;
+      sum)
+          SCRIPT=$SCRIPTSUM
+      ;;
   esac
   
-  execute_command "awk '$SCRIPT'" "${args[--input]}" "${args[--output]}"
+  if [[ -n ${args[--readable]} ]]
+  then
+      execute_command "awk '$SCRIPT'" "${args[--input]}" "${args[--output]}" "numfmt --to=si --field=$FIELD --format=\"%.2f\""
+  else
+      execute_command "awk '$SCRIPT'" "${args[--input]}" "${args[--output]}"
+  fi
 }
 
 # :command.function
@@ -940,6 +1084,43 @@ fastatools_freqs_command() {
   fi
   
   execute_command "awk '$SCRIPT'" "${args[--input]}" "${args[--output]}"
+}
+
+# :command.function
+fastatools_split_command() {
+  # :src/split_command.sh
+  
+  if [[ -z "${args[--each]}" && -z "${args[--every]}" ]]
+  then
+      echo "You must specify either --each or --every"
+      echo ""
+      fastatools_split_usage
+      exit 1
+  fi
+  
+  if [[ -n "${args[--each]}" && -n "${args[--every]}" ]]
+  then
+      echo "You can only specify one of --each or --every"
+      echo ""
+      fastatools_split_usage
+      exit 1
+  fi
+  
+  SCRIPT=""
+  P="${args[--prefix]}"
+  
+  if [[ -n "${args[--each]}" ]]
+  then
+      SCRIPT="BEGIN{ RS=\">\"; FS=\"\n\" } NR>1 { fname=\"$P\"\$1\".fa\"; print \">\"\$1 > fname; for (i=2; i<NF; i++) { print \$i > fname; } }"
+  fi
+  
+  if [[ -n "${args[--every]}" ]]
+  then
+      E="${args[--every]}"
+      SCRIPT="BEGIN{ RS=\">\"; FS=\"\n\"; counter=0; n_seqs=0 } NR>1 { n_seqs++; if (n_seqs == ($E + 1)) { counter++; n_seqs =1; } fname=\"$P\"counter\".fa\"; print \">\"\$1 > fname; for (i=2; i<NF; i++) { print \$i > fname; } }"
+  fi
+  
+  execute_command "awk '$SCRIPT'" "${args[--input]}"
 }
 
 # :command.function
@@ -1047,6 +1228,13 @@ parse_requirements() {
     shift $#
     ;;    
   
+  subsite )
+    action="subsite"
+    shift
+    fastatools_subsite_parse_requirements "$@"
+    shift $#
+    ;;    
+  
   count )
     action="count"
     shift
@@ -1072,6 +1260,13 @@ parse_requirements() {
     action="freqs"
     shift
     fastatools_freqs_parse_requirements "$@"
+    shift $#
+    ;;    
+  
+  split )
+    action="split"
+    shift
+    fastatools_split_parse_requirements "$@"
     shift $#
     ;;    
   
@@ -1713,6 +1908,93 @@ fastatools_tail_parse_requirements() {
 }
 
 # :command.parse_requirements
+fastatools_subsite_parse_requirements() {
+  # :command.fixed_flag_filter
+  case "$1" in
+  --version | -v )
+    version_command
+    exit
+    ;;
+  
+  --help | -h )
+    long_usage=yes
+    fastatools_subsite_usage
+    exit
+    ;;
+  
+  esac
+  # :command.environment_variables_filter
+  # :command.dependencies_filter
+  # :command.command_filter
+  action="subsite"
+  # :command.required_args_filter
+  # :command.required_flags_filter
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+    # :flag.case
+    --input | -i )
+      if [[ $2 ]]; then
+        args[--input]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--input requires an argument: --input, -i INPUTPATH"
+        exit 1
+      fi
+      ;;
+  
+    # :flag.case
+    --output | -o )
+      if [[ $2 ]]; then
+        args[--output]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--output requires an argument: --output, -o OUTPUTPATH"
+        exit 1
+      fi
+      ;;
+  
+    # :flag.case
+    --file | -f )
+      if [[ $2 ]]; then
+        args[--file]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--file requires an argument: --file, -f FILE"
+        exit 1
+      fi
+      ;;
+  
+    # :flag.case
+    --fail | -x )
+      args[--fail]=1
+      shift
+      ;;
+  
+  
+    -* )
+      other_args+=("$1")
+      shift
+      ;;
+  
+    * )
+      # :command.parse_requirements_case
+        other_args+=("$1")
+        shift
+      ;;
+  
+    esac
+  done
+  # :command.catch_all_filter
+  # :command.default_assignments
+  # :command.whitelist_filter
+}
+
+# :command.parse_requirements
 fastatools_count_parse_requirements() {
   # :command.fixed_flag_filter
   case "$1" in
@@ -1912,6 +2194,12 @@ fastatools_length_parse_requirements() {
       fi
       ;;
   
+    # :flag.case
+    --readable | -r )
+      args[--readable]=1
+      shift
+      ;;
+  
   
     -* )
       printf "invalid option: %s\n" "$key"
@@ -1930,8 +2218,8 @@ fastatools_length_parse_requirements() {
   # :command.default_assignments
   [[ -n ${args[--mode]} ]] || args[--mode]="each"
   # :command.whitelist_filter
-  if [[ ! ${args[--mode]} =~ ^(each|min|max|mean)$ ]]; then
-    printf "%s\n" "--mode must be one of: each, min, max, mean"
+  if [[ ! ${args[--mode]} =~ ^(each|min|max|mean|sum)$ ]]; then
+    printf "%s\n" "--mode must be one of: each, min, max, mean, sum"
     exit 1
   fi
 }
@@ -2008,6 +2296,94 @@ fastatools_freqs_parse_requirements() {
   done
   # :command.catch_all_filter
   # :command.default_assignments
+  # :command.whitelist_filter
+}
+
+# :command.parse_requirements
+fastatools_split_parse_requirements() {
+  # :command.fixed_flag_filter
+  case "$1" in
+  --version )
+    version_command
+    exit
+    ;;
+  
+  --help | -h )
+    long_usage=yes
+    fastatools_split_usage
+    exit
+    ;;
+  
+  esac
+  # :command.environment_variables_filter
+  # :command.dependencies_filter
+  # :command.command_filter
+  action="split"
+  # :command.required_args_filter
+  # :command.required_flags_filter
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+    # :flag.case
+    --input | -i )
+      if [[ $2 ]]; then
+        args[--input]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--input requires an argument: --input, -i INPUTPATH"
+        exit 1
+      fi
+      ;;
+  
+    # :flag.case
+    --each | -e )
+      args[--each]=1
+      shift
+      ;;
+  
+    # :flag.case
+    --every | -v )
+      if [[ $2 ]]; then
+        args[--every]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--every requires an argument: --every, -v EVERY"
+        exit 1
+      fi
+      ;;
+  
+    # :flag.case
+    --prefix | -p )
+      if [[ $2 ]]; then
+        args[--prefix]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--prefix requires an argument: --prefix, -p OUTPUTPREFIX"
+        exit 1
+      fi
+      ;;
+  
+  
+    -* )
+      printf "invalid option: %s\n" "$key"
+      exit 1
+      ;;
+  
+    * )
+      # :command.parse_requirements_case
+      printf "invalid argument: %s\n" "$key"
+      exit 1
+      ;;
+  
+    esac
+  done
+  # :command.catch_all_filter
+  # :command.default_assignments
+  [[ -n ${args[--prefix]} ]] || args[--prefix]="split_"
   # :command.whitelist_filter
 }
 
@@ -2320,6 +2696,14 @@ run() {
       fastatools_tail_command
     fi
   
+  elif [[ $action == "subsite" ]]; then
+    if [[ ${args[--help]} ]]; then
+      long_usage=yes
+      fastatools_subsite_usage
+    else
+      fastatools_subsite_command
+    fi
+  
   elif [[ $action == "count" ]]; then
     if [[ ${args[--help]} ]]; then
       long_usage=yes
@@ -2350,6 +2734,14 @@ run() {
       fastatools_freqs_usage
     else
       fastatools_freqs_command
+    fi
+  
+  elif [[ $action == "split" ]]; then
+    if [[ ${args[--help]} ]]; then
+      long_usage=yes
+      fastatools_split_usage
+    else
+      fastatools_split_command
     fi
   
   elif [[ $action == "rename" ]]; then

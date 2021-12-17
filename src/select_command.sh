@@ -23,6 +23,6 @@ else
     operator="~"
 fi
 
-SCRIPT="BEGIN { RS=\">\"; FS=\"\n\" } NR>1 { if (\$1 $operator /$joined\$/) { print \">\"\$1; for (i=2; i<NF; i++) { print \$i } } }"
+SCRIPT="BEGIN { RS=\">\"; FS=\"\n\" } NR>1 { if (\$1 $operator /^$joined\$/) { print \">\"\$1; for (i=2; i<NF; i++) { print \$i } } }"
 
 execute_command "awk '$SCRIPT'" "${args[--input]}" "${args[--output]}"

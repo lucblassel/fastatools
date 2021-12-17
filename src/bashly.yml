@@ -161,6 +161,34 @@ commands:
         arg: outputPath
         help: path to output file
 
+  - name: subsite
+    help: |-
+      Select specific sites of aligned FASTA sequences
+
+      The sites can be a list of integers specified as positional arguments or in a file. 
+      If the sequences are not aligned (i.e they do not have the same length) a warning will be thrown.
+
+    catch_all: true
+    flags:
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
+      - long: --file
+        short: -f
+        arg: file
+        help: file with positions of am to keep (1 name per line)
+
+      - long: --fail
+        short: -x
+        help: Exit with an error if sequences are unaligned instead of warn.
+
   - name: count
     help: Count number of sequences in FASTA
     group: Information
@@ -218,11 +246,15 @@ commands:
       - long: --mode
         short: -m
         arg: mode
-        help: |- 
+        help: |-
           How to display length
-          The "each" mode will display length for every sequence. The "min", "max" and "mean" modes will display the computed length over all sequences.
+          The "each" mode will display length for every sequence. The "min", "max" and "mean" modes will display the computed length over all sequences. The "sum" option will return the sum of all sequence lengths.
         default: each
-        allowed: [each, min, max, mean]
+        allowed: [each, min, max, mean, sum]
+
+      - long: --readable
+        short: -r
+        help: Human readable lengths
 
   - name: freqs
     help: get nucleotide frequencies in sequences
@@ -241,6 +273,30 @@ commands:
         short: -m
         help: display the mean frequencies over all sequences
 
+  - name: split
+    help: split FASTA file in several files
+    group: Splitting
+    flags:
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+
+      - long: --each
+        short: -e
+        help: split file into individual sequences
+
+      - long: --every
+        short: -v
+        arg: every
+        help: split every n sequences (incompatible with --each)
+
+      - long: --prefix
+        short: -p
+        arg: outputPrefix
+        help: prefix for output_files
+        default: split_
+
   - name: rename
     help: rename sequences in FASTA
     group: Name Manipulation
@@ -250,7 +306,7 @@ commands:
         short: -f
         arg: file
         help: path to name file (old name, new name) on each line
-      
+
       - long: --regex
         short: -r
         arg: regex
@@ -272,7 +328,7 @@ commands:
       - name: id
         help: identifier to add to sequence names
         required: true
-    flags: 
+    flags:
       - long: --prefix
         short: -p
         help: add id to beginning instead of end
