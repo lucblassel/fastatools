@@ -1,5 +1,84 @@
-SCRIPTARGS='BEGIN { RS=">"; FS=" "; ORS="\n"; n = split(args, temp, " "); for (x in temp) { pos[temp[x]]=1 } } NR>1 {printf ">%s\n", $1; curr = 0; for (i=2; i <= NF; i++) { for (j=1; j<=length($i); j++) { curr++; if (curr in pos) { printf "%s", substr($i, j, 1) } } } printf("\n") }'
-SCRIPTFILE='BEGIN { while ( getline < file ) { pos[$0] = 1 } RS=">"; FS=" "; ORS="\n"; } NR>1 {printf ">%s\n", $1; curr = 0; for (i=2; i <= NF; i++) { for (j=1; j<=length($i); j++) { curr++; if (curr in pos) { printf "%s", substr($i, j, 1) } } } printf("\n") }'
+
+SCRIPTFILE='BEGIN {
+    i = 1;
+    while ( getline < file ) {
+        pos[i] = $0;
+        i++;
+    }
+    # print pos;
+    RS=">";
+    FS=" ";
+    ORS="";
+    } NR>1 {
+    printf ">%s\n", $1;
+    curr = 0;
+    for (p in pos) {
+        recpos[p] = pos[p];
+    }
+    for (i=2; i <= NF; i++) {
+        if (length(recpos) == 0) {
+            break;
+        }
+        total = curr + length($i);
+        c = sprintf("%010d", curr);
+        t = sprintf("%010d", total);
+        k=1
+        for (j=1; j<=length(recpos); j++) {
+            p_ = sprintf("%010d", recpos[j]);
+            if (p_ > c && p_ <= t) {
+                print substr($i, recpos[j] - curr, 1);
+                } else {
+                new[k] = recpos[j];
+                k++;
+            }
+        }
+        curr = total;
+        delete recpos;
+        for (k in new) {
+            recpos[k] = new[k];
+        }
+        delete new;
+    }
+    printf("\n")
+}'
+
+SCRIPTARGS='BEGIN {
+    RS=">";
+    FS="\n";
+    ORS="";
+    n = split(args, pos, " ");
+    } NR>1 {
+    printf ">%s\n", $1;
+    curr = 0;
+    for (p in pos) {
+        recpos[p] = pos[p];
+    }
+    for (i=2; i <= NF; i++) {
+        if (length(recpos) == 0) {
+            break;
+        }
+        total = curr + length($i);
+        c = sprintf("%010d", curr);
+        t = sprintf("%010d", total);
+        k=1
+        for (j=1; j<=length(recpos); j++) {
+            p_ = sprintf("%010d", recpos[j]);
+            if (p_ > c && p_ <= t) {
+                print substr($i, recpos[j] - curr, 1);
+                } else {
+                new[k] = recpos[j];
+                k++;
+            }
+        }
+        curr = total;
+        delete recpos;
+        for (k in new) {
+            recpos[k] = new[k];
+        }
+        delete new;
+    }
+    printf("\n")
+}'
 
 if [[ -n ${args[--file]} ]]
 then
