@@ -305,17 +305,17 @@ commands:
       - long: --file
         short: -f
         arg: file
-        help: path to name file (old name, new name) on each line
+        help: path to rename file with "old_name>new_name" on each line
 
       - long: --regex
         short: -r
         arg: regex
-        help: regex to rename file (must also specify --substitute flag).
+        help: regex to rename file.
 
       - long: --substitute
         short: -s
         arg: sub
-        help: replacer group in regex (only works if --regex is specified)
+        help: replacer group in regex (only works if --regex is specified). If not set then rename will delete the regex match.
 
       - long: --input
         short: -i
