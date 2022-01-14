@@ -310,7 +310,12 @@ commands:
       - long: --regex
         short: -r
         arg: regex
-        help: regex to rename file
+        help: regex to rename file (must also specify --substitute flag).
+
+      - long: --substitute
+        short: -s
+        arg: sub
+        help: replacer group in regex (only works if --regex is specified)
 
       - long: --input
         short: -i

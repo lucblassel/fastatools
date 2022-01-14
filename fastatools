@@ -645,7 +645,12 @@ fastatools_rename_usage() {
     
     # :flag.usage
     echo "  --regex, -r REGEX"
-    printf "    regex to rename file\n"
+    printf "    regex to rename file (must also specify --substitute flag).\n"
+    echo
+    
+    # :flag.usage
+    echo "  --substitute, -s SUB"
+    printf "    replacer group in regex (only works if --regex is specified)\n"
     echo
     
     # :flag.usage
@@ -1132,10 +1137,23 @@ fastatools_split_command() {
 # :command.function
 fastatools_rename_command() {
   # :src/rename_command.sh
-  echo "# this file is located in 'src/rename_command.sh'"
-  echo "# code for 'fastatools rename' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+  
+  if [[ -n "${args[--file]}" ]]
+  then
+      SCRIPT="BEGIN {while (getline < \"'\"${args[--file]}\"'\") { split(\$0, fields); renamer[fields[1]] = fields[2]; } close(\"'\"${args[--file]}\"'\"); RS=\">\"; FS=\"\n\"; } NR>1 { print \">\" renamer[\$1]; for (i=2; i<NF; i++) { print \$i } }"
+  elif [[ -n "${args[--regex]}" ]]
+  then
+      if [[ -z "${args[--substitute]}" ]]
+      then
+          echo "You must specify a replace group with --substitute when using regex"
+          exit 1;
+      fi
+      SCRIPT="BEGIN { RS=\">\"; FS=\"\n\"; } NR>1 { gsub(/${args[--regex]}/, \"${args[--substitute]}\", \$1); print \">\" \$1; for (i=2; i<NF; i++) { print \$i } }"
+  else
+      echo "You must specify file or regex to rename sequences"
+      exit 1;
+  fi
+  execute_command "awk '$SCRIPT'" "${args[--input]}" "${args[--output]}"
 }
 
 # :command.function
@@ -2439,6 +2457,18 @@ fastatools_rename_parse_requirements() {
         shift
       else
         printf "%s\n" "--regex requires an argument: --regex, -r REGEX"
+        exit 1
+      fi
+      ;;
+  
+    # :flag.case
+    --substitute | -s )
+      if [[ $2 ]]; then
+        args[--substitute]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--substitute requires an argument: --substitute, -s SUB"
         exit 1
       fi
       ;;
