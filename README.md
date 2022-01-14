@@ -41,7 +41,7 @@ This is a short list presenting the avaiable `fastatools` commands.
 
 ### Name manipulation commands
 
-- ~~`rename`: Rename sequences in FASTA file~~ **(not implemented yet)**
+- `rename`: Rename sequences in FASTA file
 - `addid`: Add an identified to each sequence name in a sequence name
 
 ### Splitting commands
