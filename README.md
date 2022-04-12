@@ -38,6 +38,7 @@ This is a short list presenting the avaiable `fastatools` commands.
 - `upper`: Transform sequences to uppercase
 - `lower`: Transform sequences to lowercase
 - `pretty`: Pretty print FASTA file, wrapping sequences to desired width
+- `rc`: Reverse complement sequences
 
 ### Name manipulation commands
 

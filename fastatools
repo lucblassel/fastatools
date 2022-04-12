@@ -29,6 +29,7 @@ fastatools_usage() {
   echo "  upper        Transform sequences to uppercase"
   echo "  lower        Transform sequences to lowercase"
   echo "  pretty       Wrap long sequences to a desired width"
+  echo "  rc           get reverse complement of sequences"
   printf "\nSelection Commands:\n"
   echo "  select       Select sequences to keep by name"
   echo "  subset       Select sequences to keep by index"
@@ -168,6 +169,41 @@ fastatools_pretty_usage() {
     echo "  --width, -w WIDTH"
     printf "    width at which to wrap sequences\n"
     printf "    Default: 60\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+fastatools_rc_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "fastatools rc - get reverse complement of sequences\n"
+    echo 
+  else
+    printf "fastatools rc - get reverse complement of sequences\n"
+    echo 
+  fi
+
+  printf "Usage:\n"
+  printf "  fastatools rc [options]\n"
+  printf "  fastatools rc --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
+    echo
+    # :command.usage_flags
+    # :flag.usage
+    echo "  --input, -i INPUTPATH"
+    printf "    path to input file\n"
+    echo
+    
+    # :flag.usage
+    echo "  --output, -o OUTPUTPATH"
+    printf "    path to output file\n"
     echo
 
   fi
@@ -894,6 +930,53 @@ fastatools_pretty_command() {
 }
 
 # :command.function
+fastatools_rc_command() {
+  # :src/rc_command.sh
+  
+  SCRIPT='BEGIN { 
+      RS=">";
+      FS = " ";
+  } NR>1 { 
+      printf ">" $1 "\n";
+      for (i=NF; i >= 2; i-- ) { 
+          for (j=length($i); j>=1; j--) { 
+              char = toupper(substr($i,j,1))
+              if (char == "A") {
+                  printf "T";
+              } else if (char == "T" || char == "U") {
+                  printf "A";
+              } else if (char == "C") {
+                  printf "G";
+              } else if (char == "G") {
+                  printf "C";
+              } else if (char == "M") {
+                  printf "K";
+              } else if (char == "K") {
+                  printf "M";
+              } else if (char == "R") {
+                  printf "Y";
+              } else if (char == "Y") {
+                  printf "R";
+              } else if (char == "B") {
+                  printf "V";
+              } else if (char == "D") {
+                  printf "H";
+              } else if (char == "H") {
+                  printf "D";
+              } else if (char == "V") {
+                  printf "B";
+              } else { 
+                  printf char;
+              }
+          } 
+      }
+      printf "\n";
+  }'
+  
+  execute_command "awk '$SCRIPT'" "${args[--input]}" "${args[--output]}"
+}
+
+# :command.function
 fastatools_select_command() {
   # :src/select_command.sh
   
@@ -943,25 +1026,6 @@ fastatools_select_command() {
       fi
       SCRIPT="BEGIN { RS=\">\"; FS=\"\n\" } NR>1 { if (\$1 $operator /^$joined\$/) { print \">\"\$1; for (i=2; i<NF; i++) { print \$i } } }"
   fi
-  
-  # if [[ -n ${args[--file]} ]]
-  # then
-  #     joined="($(sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/|/g;s/|$//' "${args[--file]}" ))"
-  # elif [[ -n ${args[--regex]} ]]
-  # then
-  #     joined="${args[--regex]}"
-  # else
-  #     joined="($(join_by "|" ${other_args[*]} ))"
-  # fi
-  
-  # if [[ ${args[--exclude]} ]]
-  # then
-  #     operator="!~"
-  # else
-  #     operator="~"
-  # fi
-  
-  # SCRIPT="BEGIN { RS=\">\"; FS=\"\n\" } NR>1 { if (\$1 $operator /^$joined\$/) { print \">\"\$1; for (i=2; i<NF; i++) { print \$i } } }"
   
   execute_command "awk '$SCRIPT'" "${args[--input]}" "${args[--output]}"
 }
@@ -1344,6 +1408,13 @@ parse_requirements() {
     shift $#
     ;;    
   
+  rc )
+    action="rc"
+    shift
+    fastatools_rc_parse_requirements "$@"
+    shift $#
+    ;;    
+  
   select )
     action="select"
     shift
@@ -1684,6 +1755,75 @@ fastatools_pretty_parse_requirements() {
   # :command.catch_all_filter
   # :command.default_assignments
   [[ -n ${args[--width]} ]] || args[--width]="60"
+  # :command.whitelist_filter
+}
+
+# :command.parse_requirements
+fastatools_rc_parse_requirements() {
+  # :command.fixed_flag_filter
+  case "$1" in
+  --version | -v )
+    version_command
+    exit
+    ;;
+  
+  --help | -h )
+    long_usage=yes
+    fastatools_rc_usage
+    exit
+    ;;
+  
+  esac
+  # :command.environment_variables_filter
+  # :command.dependencies_filter
+  # :command.command_filter
+  action="rc"
+  # :command.required_args_filter
+  # :command.required_flags_filter
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+    # :flag.case
+    --input | -i )
+      if [[ $2 ]]; then
+        args[--input]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--input requires an argument: --input, -i INPUTPATH"
+        exit 1
+      fi
+      ;;
+  
+    # :flag.case
+    --output | -o )
+      if [[ $2 ]]; then
+        args[--output]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--output requires an argument: --output, -o OUTPUTPATH"
+        exit 1
+      fi
+      ;;
+  
+  
+    -* )
+      printf "invalid option: %s\n" "$key"
+      exit 1
+      ;;
+  
+    * )
+      # :command.parse_requirements_case
+      printf "invalid argument: %s\n" "$key"
+      exit 1
+      ;;
+  
+    esac
+  done
+  # :command.catch_all_filter
+  # :command.default_assignments
   # :command.whitelist_filter
 }
 
@@ -2818,6 +2958,14 @@ run() {
       fastatools_pretty_usage
     else
       fastatools_pretty_command
+    fi
+  
+  elif [[ $action == "rc" ]]; then
+    if [[ ${args[--help]} ]]; then
+      long_usage=yes
+      fastatools_rc_usage
+    else
+      fastatools_rc_command
     fi
   
   elif [[ $action == "select" ]]; then

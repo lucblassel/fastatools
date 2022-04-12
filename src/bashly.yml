@@ -53,6 +53,18 @@ commands:
         default: 60
         help: width at which to wrap sequences
 
+  - name: rc
+    help: Reverse complement sequences
+    flags: 
+      - long: --input
+        short: -i
+        arg: inputPath
+        help: path to input file
+      - long: --output
+        short: -o
+        arg: outputPath
+        help: path to output file
+
   - name: select
     help: Select sequences to keep by name
     group: Selection
